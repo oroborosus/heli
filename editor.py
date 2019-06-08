@@ -1,4 +1,5 @@
 # coding=utf-8
+import sys
 
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
@@ -6,12 +7,13 @@ import pandas
 from matplotlib.widgets import TextBox, Button
 from pandas.plotting import register_matplotlib_converters
 
+from lib import normalize, load_data, user_events_to_data, KW_GOING_HELI, KW_BACKWARD, widget_log
+
 register_matplotlib_converters()
 
-from lib import normalize, load_data, user_events_to_data, KW_GOING_HELI, KW_BACKWARD, widget_log, KW_START
 
 user_events_style = {"color": "red", "alpha": 0.33}
-file_name = "small_example"
+file_name = sys.argv[1]
 (gps, alt, user2) = load_data(file_name)
 user_marks_holder = [user2]
 
@@ -27,6 +29,7 @@ if __name__ == '__main__':
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))  # %Y-%m-%d %H:%M
     error_text = TextBox(plt.axes([0.04, 0.005, 0.8, 0.04]), 'Error', initial="")
 
+
     def draw_user_marks():
         for span in draw_user_marks.spans:
             span.remove()
@@ -35,12 +38,14 @@ if __name__ == '__main__':
         for (i, dt) in enumerate(user_data):
             color = 'red' if dt['activity'] == "heli" else 'blue'
             spanid = charts_ax.axvspan(dt['from'], dt['to'], 0.005, 1.0, color=color,
-                        alpha=0.1, linewidth=1.5, picker=True, gid=dt['from'])
+                                       alpha=0.1, linewidth=1.5, picker=True, gid=dt['from'])
             draw_user_marks.spans.append(spanid)
+
 
     draw_user_marks.spans = []
 
     draw_user_marks()
+
 
     @widget_log(error_text)
     def pick_box(event):
@@ -78,7 +83,7 @@ if __name__ == '__main__':
         mark_type = get_state("type")
         new_type_text = KW_BACKWARD[mark_type]
 
-        if pick_box.selected is None: # creating new mark
+        if pick_box.selected is None:  # creating new mark
             new_df = pandas.DataFrame(
                 index=[new_ts],
                 columns=["name"],
@@ -86,7 +91,7 @@ if __name__ == '__main__':
             user_marks_holder[0] = user_marks_holder[0].append(new_df, verify_integrity=True, sort=True)
             user_marks_holder[0].index.names = ["timestamp"]
             draw_user_marks()
-        else: # edit existing
+        else:  # edit existing
             old_ts = get_selected_ts()
             user_marks_holder[0].ix[old_ts, 'name'] = new_type_text
             if old_ts != new_ts:
@@ -119,6 +124,8 @@ if __name__ == '__main__':
         }
         a.on_clicked(lambda x: set_state(label, a_state))
         b.on_clicked(lambda x: set_state(label, b_state))
+
+
     check_btn.state_holder = {}
     check_btn.params = {}
 
@@ -129,8 +136,10 @@ if __name__ == '__main__':
 
     @widget_log(error_text)
     def finish(event):
-        user_marks_holder[0].sort_index()\
+        user_marks_holder[0].sort_index() \
             .to_csv('./data/csvs/' + file_name + "_user_eddited.csv")
+        print "data saved"
+
 
     # left, bottom, width, height
     start_time = TextBox(plt.axes([0.04, 0.05, 0.3, 0.05]), 'Start', initial="YYYY-mm-dd HH:mm:ss")

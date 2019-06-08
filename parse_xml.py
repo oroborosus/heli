@@ -1,9 +1,10 @@
 # coding=utf-8
 import datetime
+import sys
 import xml.etree.ElementTree as ET
 
 if __name__ == '__main__':
-    filename = "part_2"
+    filename = sys.argv[1]
     root = ET.parse('./data/%s.xml' % filename).getroot()
     keys_by_type = {}
     data_by_type = {}
