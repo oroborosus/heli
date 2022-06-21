@@ -8,4 +8,4 @@ matplotlib
 # scikit_learn-0.20.3-cp27-cp27mu-manylinux1_x86_64
 scikit-learn==0.20.3
 scipy
-numpy==1.16.4
+numpy==1.22.0
